@@ -18,30 +18,30 @@ const gameOverElement = document.getElementById('game-over');
 const finalScoreElement = document.getElementById('final-score');
 const restartBtn = document.getElementById('restart-btn');
 
-// Touch controls - optimized for mobile responsiveness
-let isTouching = false;
-let touchX = 0;
+// Control bar system - barra em baixo para controlo horizontal
+const controlBar = document.getElementById('control-bar');
+let isDragging = false;
+let dragStartX = 0;
+let initialCarX = 0;
 
-// Use pointer events for better touch support
-document.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'touch') {
-        isTouching = true;
-        touchX = e.clientX;
-        e.preventDefault();
-    }
-});
-
-document.addEventListener('pointermove', (e) => {
-    if (!gameActive || !isTouching) return;
+// Quando toca na barra, começa a arrastar
+controlBar.addEventListener('touchstart', (e) => {
+    if (!gameActive) return;
     
     e.preventDefault();
-    const currentX = e.clientX;
-    const deltaX = currentX - touchX;
+    isDragging = true;
+    dragStartX = e.touches[0].clientX;
+    initialCarX = carX;
     
-    // Direct movement based on touch delta (faster response)
-    carX += deltaX * 0.5; // Increased multiplier for more responsive movement
+    // Posiciona o carro imediatamente na posição do toque
+    const touchX = e.touches[0].clientX;
+    const barWidth = controlBar.offsetWidth;
+    const relativeX = touchX - controlBar.getBoundingClientRect().left;
     
-    // Boundary check with some margin
+    // Mapeia a posição do toque para a posição do carro
+    carX = relativeX * (window.innerWidth / barWidth);
+    
+    // Boundary check
     const maxX = window.innerWidth - carWidth - 20;
     const minX = 20;
     
@@ -50,16 +50,32 @@ document.addEventListener('pointermove', (e) => {
     
     car.style.left = carX + 'px';
     car.style.transform = `translateX(-50%)`;
+});
+
+controlBar.addEventListener('touchmove', (e) => {
+    if (!gameActive || !isDragging) return;
     
-    touchX = currentX;
+    e.preventDefault();
+    const touchX = e.touches[0].clientX;
+    const barWidth = controlBar.offsetWidth;
+    const relativeX = touchX - controlBar.getBoundingClientRect().left;
+    
+    // Move o carro diretamente para a posição do dedo na barra
+    carX = relativeX * (window.innerWidth / barWidth);
+    
+    // Boundary check
+    const maxX = window.innerWidth - carWidth - 20;
+    const minX = 20;
+    
+    if (carX < minX) carX = minX;
+    if (carX > maxX) carX = maxX;
+    
+    car.style.left = carX + 'px';
+    car.style.transform = `translateX(-50%)`;
 });
 
-document.addEventListener('pointerup', () => {
-    isTouching = false;
-});
-
-document.addEventListener('pointercancel', () => {
-    isTouching = false;
+controlBar.addEventListener('touchend', () => {
+    isDragging = false;
 });
 
 // Create obstacles
