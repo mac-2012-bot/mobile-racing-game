@@ -1,14 +1,15 @@
 // Mobile Racing Game Logic
 let carX = 50;
 let carSpeed = 0;
-const carWidth = 60;
-const carHeight = 60;
+const carWidth = 80;
+const carHeight = 40;
 
 let lives = 3;
 let score = 0;
 let gameActive = true;
 let obstacles = [];
 let gameLoop;
+let hitObstacles = new Set(); // Track which obstacles have been hit
 
 // DOM elements
 const car = document.getElementById('car');
@@ -121,7 +122,7 @@ function gameUpdate() {
         // Check collision
         if (checkCollision(carX, window.innerHeight - carHeight, 
                          obs.x, obs.y, carWidth, carHeight, 60)) {
-            hitObstacle();
+            hitObstacle(obs.element);
         }
         
         // Remove if out of screen
@@ -145,9 +146,18 @@ function checkCollision(x1, y1, x2, y2, w1, h1, w2) {
            y1 + h1 > y2;
 }
 
-// Hit obstacle - só perde uma vida por obstáculo
-function hitObstacle() {
+// Hit obstacle - só perde uma vida por obstáculo único
+function hitObstacle(obstacleElement) {
     if (lives <= 0) return; // Não perde mais vidas se já perdeu todas
+    
+    // Check if this obstacle was already hit
+    const obstacleId = obstacleElement.dataset.id || Math.random().toString(36).substr(2, 9);
+    
+    if (hitObstacles.has(obstacleId)) {
+        return; // Already hit this obstacle, don't lose another life
+    }
+    
+    hitObstacles.add(obstacleId);
     
     lives--;
     updateLivesDisplay();
