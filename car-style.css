@@ -1,0 +1,37 @@
+/* Car shape using CSS */
+#car {
+    position: absolute;
+    width: 60px;
+    height: 40px;
+    background-color: #4CAF50;
+    border-radius: 20px 20px 5px 5px;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    clip-path: polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);
+}
+
+#car::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #2E7D32;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#car::after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background-color: #1B5E20;
+    border-radius: 50%;
+    top: 30%;
+    left: 20%;
+    transform: translate(-50%, -50%);
+}
