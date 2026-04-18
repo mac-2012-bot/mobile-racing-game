@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile Racing Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #222;
+            font-family: Arial, sans-serif;
+            color: white;
+            touch-action: manipulation;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #111;
+        }
+        
+        #car {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        
+        .obstacle {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: #F44336;
+            z-index: 5;
+        }
+        
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            z-index: 20;
+        }
+        
+        #lives {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            z-index: 20;
+        }
+        
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+        }
+        
+        #game-over h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        #game-over p {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        
+        #restart-btn {
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        
+        #restart-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="car"></div>
+        <div id="score">0</div>
+        <div id="lives">❤️❤️❤️</div>
+        <div id="game-over">
+            <h1>Game Over</h1>
+            <p id="final-score">Pontuação: 0</p>
+            <button id="restart-btn">Recomeçar</button>
+        </div>
+    </div>
+    
+    <script>
+        // Game state
+        let carX = 50;
+        let carSpeed = 0;
+        const carWidth = 60;
+        const carHeight = 60;
+        
+        let lives = 3;
+        let score = 0;
+        let gameActive = true;
+        let obstacles = [];
+        let gameLoop;
+        
+        // DOM elements
+        const car = document.getElementById('car');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+        const gameOverElement = document.getElementById('game-over');
+        const finalScoreElement = document.getElementById('final-score');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        // Touch controls
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: false });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (!gameActive) return;
+            
+            e.preventDefault();
+            const touchX = e.touches[0].clientX;
+            const touchY = e.touches[0].clientY;
+            
+            // Horizontal movement
+            const deltaX = touchX - touchStartX;
+            carSpeed = deltaX * 0.2;
+            
+            // Update car position
+            carX += carSpeed;
+            
+            // Boundary check
+            const maxX = window.innerWidth - carWidth;
+            if (carX < 0) carX = 0;
+            if (carX > maxX) carX = maxX;
+            
+            car.style.left = carX + 'px';
+            car.style.transform = `translateX(-50%)`;
+            
+            touchStartX = touchX;
+        }, { passive: false });
+        
+        document.addEventListener('touchend', () => {
+            carSpeed = 0;
+        });
+        
+        // Create obstacles
+        function createObstacle() {
+            if (!gameActive) return;
+            
+            const obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
+            
+            const lane = Math.floor(Math.random() * 3);
+            let leftPos;
+            
+            switch(lane) {
+                case 0: leftPos = 20; break;
+                case 1: leftPos = window.innerWidth / 2 - 30; break;
+                case 2: leftPos = window.innerWidth - 80; break;
+            }
+            
+            obstacle.style.left = leftPos + 'px';
+            obstacle.style.top = '-60px';
+            document.getElementById('game-container').appendChild(obstacle);
+            
+            obstacles.push({
+                element: obstacle,
+                x: leftPos,
+                y: -60,
+                speed: 5 + Math.random() * 3
+            });
+        }
+        
+        // Game loop
+        function gameUpdate() {
+            if (!gameActive) return;
+            
+            // Update score
+            score++;
+            scoreElement.textContent = score;
+            
+            // Move obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                obs.y += obs.speed;
+                obs.element.style.top = obs.y + 'px';
+                
+                // Check collision
+                if (checkCollision(carX, window.innerHeight - carHeight, 
+                                 obs.x, obs.y, carWidth, carHeight, 60)) {
+                    hitObstacle();
+                }
+                
+                // Remove if out of screen
+                if (obs.y > window.innerHeight) {
+                    obs.element.remove();
+                    obstacles.splice(i, 1);
+                }
+            }
+            
+            // Spawn new obstacles
+            if (Math.random() < 0.02) {
+                createObstacle();
+            }
+        }
+        
+        // Collision detection
+        function checkCollision(x1, y1, x2, y2, w1, h1, w2) {
+            return x1 < x2 + w2 &&
+                   x1 + w1 > x2 &&
+                   y1 < y2 + h1 &&
+                   y1 + h1 > y2;
+        }
+        
+        // Hit obstacle
+        function hitObstacle() {
+            lives--;
+            updateLivesDisplay();
+            
+            if (lives <= 0) {
+                gameOver();
+            }
+        }
+        
+        // Update lives display
+        function updateLivesDisplay() {
+            let livesText = '';
+            for (let i = 0; i < lives; i++) {
+                livesText += '❤️';
+            }
+            livesElement.textContent = livesText;
+        }
+        
+        // Game over
+        function gameOver() {
+            gameActive = false;
+            clearInterval(gameLoop);
+            finalScoreElement.textContent = `Pontuação: ${score}`;
+            gameOverElement.style.display = 'flex';
+        }
+        
+        // Restart game
+        restartBtn.addEventListener('click', () => {
+            // Clean up
+            obstacles.forEach(obs => obs.element.remove());
+            obstacles = [];
+            
+            // Reset game state
+            carX = 50;
+            car.style.left = '50%';
+            car.style.transform = 'translateX(-50%)';
+            lives = 3;
+            score = 0;
+            gameActive = true;
+            
+            // Update UI
+            scoreElement.textContent = '0';
+            updateLivesDisplay();
+            gameOverElement.style.display = 'none';
+            
+            // Restart game loop
+            gameLoop = setInterval(gameUpdate, 16);
+        });
+        
+        // Start game
+        gameLoop = setInterval(gameUpdate, 16);
+        
+        // Initial obstacle
+        setTimeout(createObstacle, 1000);
+    </script>
+</body>
+</html>
