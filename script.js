@@ -145,8 +145,10 @@ function checkCollision(x1, y1, x2, y2, w1, h1, w2) {
            y1 + h1 > y2;
 }
 
-// Hit obstacle
+// Hit obstacle - só perde uma vida por obstáculo
 function hitObstacle() {
+    if (lives <= 0) return; // Não perde mais vidas se já perdeu todas
+    
     lives--;
     updateLivesDisplay();
     
