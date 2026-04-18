@@ -20,26 +20,22 @@ const restartBtn = document.getElementById('restart-btn');
 
 // Control bar system - barra em baixo para controlo horizontal
 const controlBar = document.getElementById('control-bar');
-let isDragging = false;
-let dragStartX = 0;
-let initialCarX = 0;
 
-// Quando toca na barra, começa a arrastar
+// Quando toca na barra, posiciona o carro diretamente nessa posição
 controlBar.addEventListener('touchstart', (e) => {
     if (!gameActive) return;
     
     e.preventDefault();
-    isDragging = true;
-    dragStartX = e.touches[0].clientX;
-    initialCarX = carX;
     
-    // Posiciona o carro imediatamente na posição do toque
+    // Pega na posição do toque na barra
     const touchX = e.touches[0].clientX;
-    const barWidth = controlBar.offsetWidth;
-    const relativeX = touchX - controlBar.getBoundingClientRect().left;
+    const barRect = controlBar.getBoundingClientRect();
     
-    // Mapeia a posição do toque para a posição do carro
-    carX = relativeX * (window.innerWidth / barWidth);
+    // Calcula posição relativa na barra (0 a 1)
+    const relativeX = (touchX - barRect.left) / barRect.width;
+    
+    // Converte para posição do carro no ecrã
+    carX = relativeX * (window.innerWidth - carWidth - 40) + 20;
     
     // Boundary check
     const maxX = window.innerWidth - carWidth - 20;
@@ -48,20 +44,25 @@ controlBar.addEventListener('touchstart', (e) => {
     if (carX < minX) carX = minX;
     if (carX > maxX) carX = maxX;
     
+    // Atualiza posição do carro
     car.style.left = carX + 'px';
     car.style.transform = `translateX(-50%)`;
 });
 
+// Para movimento contínuo, usa mousemove/touchmove
 controlBar.addEventListener('touchmove', (e) => {
-    if (!gameActive || !isDragging) return;
+    if (!gameActive) return;
     
     e.preventDefault();
-    const touchX = e.touches[0].clientX;
-    const barWidth = controlBar.offsetWidth;
-    const relativeX = touchX - controlBar.getBoundingClientRect().left;
     
-    // Move o carro diretamente para a posição do dedo na barra
-    carX = relativeX * (window.innerWidth / barWidth);
+    const touchX = e.touches[0].clientX;
+    const barRect = controlBar.getBoundingClientRect();
+    
+    // Calcula posição relativa na barra (0 a 1)
+    const relativeX = (touchX - barRect.left) / barRect.width;
+    
+    // Converte para posição do carro no ecrã
+    carX = relativeX * (window.innerWidth - carWidth - 40) + 20;
     
     // Boundary check
     const maxX = window.innerWidth - carWidth - 20;
@@ -70,12 +71,9 @@ controlBar.addEventListener('touchmove', (e) => {
     if (carX < minX) carX = minX;
     if (carX > maxX) carX = maxX;
     
+    // Atualiza posição do carro
     car.style.left = carX + 'px';
     car.style.transform = `translateX(-50%)`;
-});
-
-controlBar.addEventListener('touchend', () => {
-    isDragging = false;
 });
 
 // Create obstacles
