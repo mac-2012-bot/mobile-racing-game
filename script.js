@@ -18,42 +18,48 @@ const gameOverElement = document.getElementById('game-over');
 const finalScoreElement = document.getElementById('final-score');
 const restartBtn = document.getElementById('restart-btn');
 
-// Touch controls
-let touchStartX = 0;
-let touchStartY = 0;
+// Touch controls - optimized for mobile responsiveness
+let isTouching = false;
+let touchX = 0;
 
-document.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-}, { passive: false });
+// Use pointer events for better touch support
+document.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') {
+        isTouching = true;
+        touchX = e.clientX;
+        e.preventDefault();
+    }
+});
 
-document.addEventListener('touchmove', (e) => {
-    if (!gameActive) return;
+document.addEventListener('pointermove', (e) => {
+    if (!gameActive || !isTouching) return;
     
     e.preventDefault();
-    const touchX = e.touches[0].clientX;
-    const touchY = e.touches[0].clientY;
+    const currentX = e.clientX;
+    const deltaX = currentX - touchX;
     
-    // Horizontal movement
-    const deltaX = touchX - touchStartX;
-    carSpeed = deltaX * 0.2;
+    // Direct movement based on touch delta (faster response)
+    carX += deltaX * 0.5; // Increased multiplier for more responsive movement
     
-    // Update car position
-    carX += carSpeed;
+    // Boundary check with some margin
+    const maxX = window.innerWidth - carWidth - 20;
+    const minX = 20;
     
-    // Boundary check
-    const maxX = window.innerWidth - carWidth;
-    if (carX < 0) carX = 0;
+    if (carX < minX) carX = minX;
     if (carX > maxX) carX = maxX;
     
     car.style.left = carX + 'px';
     car.style.transform = `translateX(-50%)`;
     
-    touchStartX = touchX;
-}, { passive: false });
+    touchX = currentX;
+});
 
-document.addEventListener('touchend', () => {
-    carSpeed = 0;
+document.addEventListener('pointerup', () => {
+    isTouching = false;
+});
+
+document.addEventListener('pointercancel', () => {
+    isTouching = false;
 });
 
 // Create obstacles
