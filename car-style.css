@@ -1,37 +1,64 @@
-/* Car shape using CSS */
+/* Lamborghini style car - using CSS shapes to represent a Lamborghini */
 #car {
     position: absolute;
-    width: 60px;
+    width: 80px;
     height: 40px;
-    background-color: #4CAF50;
-    border-radius: 20px 20px 5px 5px;
+    background: linear-gradient(135deg, #2E7D32, #4CAF50);
+    border-radius: 5px 15px 15px 5px;
     bottom: 50px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
-    clip-path: polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
 }
 
+/* Lamborghini body shape */
 #car::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 30px;
+    background: linear-gradient(135deg, #1B5E20, #2E7D32);
+    border-radius: 3px 10px 10px 3px;
+    top: 5px;
+    left: 10px;
+    clip-path: polygon(0% 0%, 90% 0%, 100% 50%, 90% 100%, 0% 100%, 10% 50%);
+}
+
+/* Front of the Lamborghini */
+#car::after {
     content: '';
     position: absolute;
     width: 20px;
     height: 20px;
-    background-color: #2E7D32;
+    background-color: #0891B2;
     border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 10px;
+    left: 50px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 5px rgba(8, 145, 178, 0.7);
 }
 
-#car::after {
-    content: '';
+/* Lamborghini rear */
+.lamborghini-rear {
     position: absolute;
     width: 15px;
+    height: 25px;
+    background: linear-gradient(to bottom, #1B5E20, #0F3419);
+    border-radius: 2px;
+    top: 7px;
+    left: 5px;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 80%, 70% 100%, 0% 100%);
+}
+
+/* Lamborghini side details */
+.lamborghini-side {
+    position: absolute;
+    width: 5px;
     height: 15px;
-    background-color: #1B5E20;
-    border-radius: 50%;
-    top: 30%;
-    left: 20%;
-    transform: translate(-50%, -50%);
+    background-color: #0891B2;
+    border-radius: 2px;
+    top: 12px;
+    left: 25px;
+    transform: rotate(15deg);
 }
