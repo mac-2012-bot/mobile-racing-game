@@ -22,6 +22,32 @@ const restartBtn = document.getElementById('restart-btn');
 // Control bar system - barra em baixo para controlo horizontal
 const controlBar = document.getElementById('control-bar');
 
+// Keyboard controls for PC
+let keyboardSpeed = 0;
+const keyboardSpeedMultiplier = 8;
+
+// Keyboard event listeners
+window.addEventListener('keydown', (e) => {
+    if (!gameActive) return;
+    
+    switch(e.key) {
+        case 'ArrowLeft':
+            keyboardSpeed = -keyboardSpeedMultiplier;
+            e.preventDefault();
+            break;
+        case 'ArrowRight':
+            keyboardSpeed = keyboardSpeedMultiplier;
+            e.preventDefault();
+            break;
+    }
+});
+
+window.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        keyboardSpeed = 0;
+    }
+});
+
 // Quando toca na barra, posiciona o carro diretamente nessa posição
 controlBar.addEventListener('touchstart', (e) => {
     if (!gameActive) return;
@@ -108,6 +134,19 @@ function createObstacle() {
 // Game loop
 function gameUpdate() {
     if (!gameActive) return;
+    
+    // Update car position with keyboard
+    carX += keyboardSpeed;
+    
+    // Boundary check
+    const maxX = window.innerWidth - carWidth - 20;
+    const minX = 20;
+    
+    if (carX < minX) carX = minX;
+    if (carX > maxX) carX = maxX;
+    
+    car.style.left = carX + 'px';
+    car.style.transform = `translateX(-50%)`;
     
     // Update score
     score++;
